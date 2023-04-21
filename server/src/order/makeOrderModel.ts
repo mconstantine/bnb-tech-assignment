@@ -10,11 +10,17 @@ import {
 } from "sequelize";
 import { Customer } from "../customer/makeCustomerModel";
 
+enum OrderStatus {
+  Processing = "Processing",
+  Done = "Done",
+}
+
 export class Order extends Model<
   InferAttributes<Order>,
   InferCreationAttributes<Order>
 > {
   declare id: CreationOptional<number>;
+  declare status: OrderStatus;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 
@@ -29,6 +35,10 @@ export function makeOrderModel(sequelize: Sequelize) {
         type: DataTypes.INTEGER.UNSIGNED,
         autoIncrement: true,
         primaryKey: true,
+      },
+      status: {
+        type: DataTypes.ENUM(...Object.values(OrderStatus)),
+        defaultValue: OrderStatus.Processing,
       },
       createdAt: DataTypes.DATE,
       updatedAt: DataTypes.DATE,
