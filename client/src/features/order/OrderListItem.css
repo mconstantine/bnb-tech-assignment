@@ -1,0 +1,17 @@
+.OrderListItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--color-green-light);
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+}
+
+.OrderListItem form {
+  display: flex;
+}
+
+.OrderListItem form,
+.OrderListItem form > * + * {
+  margin-left: 1em;
+}
