@@ -52,6 +52,7 @@ export function OrderListItem(props: Props) {
 
   const onSubmit: FormEventHandler<HTMLFormElement> = async (event) => {
     event.preventDefault();
+
     setState((state) => ({
       ...state,
       networkState: { status: "loading" },
