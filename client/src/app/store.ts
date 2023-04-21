@@ -1,10 +1,12 @@
 import { AnyAction, ThunkAction, configureStore } from "@reduxjs/toolkit";
 import { orderListReducer } from "../features/order/orderListSlice";
 import { pageReducer } from "../features/page/pageSlice";
+import { productListReducer } from "../features/product/productListSlice";
 
 export const store = configureStore({
   reducer: {
     orderList: orderListReducer,
+    productList: productListReducer,
     page: pageReducer,
   },
 });

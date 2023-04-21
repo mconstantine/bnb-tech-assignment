@@ -1,4 +1,4 @@
-.OrderListItem {
+.NetworkListItem {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -7,11 +7,11 @@
   padding-bottom: 0.5em;
 }
 
-.OrderListItem form {
+.NetworkListItem form {
   display: flex;
 }
 
-.OrderListItem form,
-.OrderListItem form > * + * {
+.NetworkListItem form,
+.NetworkListItem form > * + * {
   margin-left: 1em;
 }

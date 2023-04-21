@@ -37,7 +37,19 @@ export function mapNetworkState<A, B>(
   }
 }
 
-export function makeNetworkReducers<T>() {
+interface NetworkStateReducers<T> {
+  isLoading: (state: NetworkState<T>) => NetworkState<T>;
+  didSucceed: (
+    state: NetworkState<T>,
+    action: PayloadAction<T>
+  ) => NetworkState<T>;
+  didFail: (
+    state: NetworkState<T>,
+    action: PayloadAction<number>
+  ) => NetworkState<T>;
+}
+
+export function makeNetworkReducers<T>(): NetworkStateReducers<T> {
   return {
     isLoading: (state: NetworkState<T>): NetworkState<T> => {
       switch (state.status) {

@@ -4,7 +4,7 @@ import {
   makeNetworkReducers,
   sendNetworkRequest,
   mapNetworkState,
-} from "../utils";
+} from "../network";
 import { AppThunk, RootState } from "../../app/store";
 import { env } from "../../env";
 import { ServerError } from "../../ServerError";

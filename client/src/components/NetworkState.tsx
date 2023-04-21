@@ -1,4 +1,4 @@
-import { NetworkState as INetworkState } from "../features/utils";
+import { NetworkState as INetworkState } from "../features/network";
 import { Loader } from "./Loader";
 
 interface Props<T> {
