@@ -7,7 +7,8 @@
     "start": "NODE_ENV=development nodemon ./src/index.ts",
     "build": "tsc",
     "test": "jest",
-    "serve": "NODE_ENV=production node ."
+    "serve": "NODE_ENV=production node .",
+    "seedDatabase": "NODE_ENV=development tsc && node ./build/src/bin/seedDatabase.js"
   },
   "keywords": [],
   "author": "Mauro Constantinescu",

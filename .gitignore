@@ -2,3 +2,5 @@ todo.md
 node_modules/
 .env
 build/
+server/data/
+.DS_Store

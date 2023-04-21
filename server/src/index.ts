@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import meta from "../package.json";
 import { env } from "./env";
-import { setupDatabase } from "./setupDatabase";
+import { withDatabase } from "./database/database";
 
 const app = express();
 
@@ -14,7 +14,7 @@ app.get("/", (_req, res) => {
   res.json({ name, version });
 });
 
-setupDatabase().then(
+withDatabase(() => Promise.resolve()).then(
   () => {
     app.listen(env.SERVER_PORT, () => {
       console.log(`Server ready on port ${env.SERVER_PORT}`);
