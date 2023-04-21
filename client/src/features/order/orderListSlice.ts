@@ -9,14 +9,8 @@ import { AppThunk, RootState } from "../../app/store";
 import { env } from "../../env";
 import { ServerError } from "../../ServerError";
 
-export const OrderStatusProcessing = "Processing";
-export const OrderStatusDone = "Done";
-
-export type OrderStatus = typeof OrderStatusProcessing | typeof OrderStatusDone;
-
 export interface Order {
   id: number;
-  status: OrderStatus;
   createdAt: string;
 }
 

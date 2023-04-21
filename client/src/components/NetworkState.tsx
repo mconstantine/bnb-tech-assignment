@@ -8,8 +8,6 @@ interface Props<T> {
 
 export function NetworkState<T>(props: Props<T>) {
   switch (props.state.status) {
-    case "idle":
-      return null;
     case "loading":
       return <Loader />;
     case "failure":

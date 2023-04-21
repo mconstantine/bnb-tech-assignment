@@ -1,24 +1,16 @@
 import { Router } from "express";
-import { UpdateOrderInput, UpdateOrderParams } from "./domain";
-import { handleParseError, makeEndpoint } from "../utils/makeEndpoint";
-import { updateOrder } from "./updateOrder";
+import { UpdateOrderParams } from "./domain";
+import { makeEndpoint } from "../utils/makeEndpoint";
+import { setOrderDone } from "./setOrderDone";
 
 export function makeOrderRoutes(): Router {
   const router = Router();
 
-  router.patch("/:id", (req, res) => {
-    const paramsParseResult = UpdateOrderParams.safeParse(req.params);
-
-    if (paramsParseResult.success) {
-      const id = paramsParseResult.data.id;
-
-      return makeEndpoint(UpdateOrderInput, req.body, res, (data) =>
-        updateOrder(id, data)
-      );
-    } else {
-      return handleParseError(paramsParseResult, res);
-    }
-  });
+  router.patch("/:id/done", (req, res) =>
+    makeEndpoint(UpdateOrderParams, req.params, res, ({ id }) =>
+      setOrderDone(id)
+    )
+  );
 
   return router;
 }

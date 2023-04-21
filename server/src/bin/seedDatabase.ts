@@ -48,19 +48,19 @@ if (env.NODE_ENV === "production") {
       CustomerId: order1.CustomerId,
     });
 
-    order1.createProduct({
+    await order1.createProduct({
       ...product2Data,
       quantity: 1,
       CustomerId: order1.CustomerId,
     });
 
-    order1.createProduct({
+    await order1.createProduct({
       ...product3Data,
       quantity: 3,
       CustomerId: order1.CustomerId,
     });
 
-    order1.createProduct({
+    await order1.createProduct({
       ...product4Data,
       quantity: 4,
       CustomerId: order1.CustomerId,
@@ -84,19 +84,19 @@ if (env.NODE_ENV === "production") {
       CustomerId: order2.CustomerId,
     });
 
-    await order2.createProduct({
+    await order3.createProduct({
       ...product2Data,
       quantity: 2,
       CustomerId: order3.CustomerId,
     });
 
-    await order2.createProduct({
+    await order3.createProduct({
       ...product2Data,
       quantity: 2,
       CustomerId: order3.CustomerId,
     });
 
-    await order2.createProduct({
+    await order3.createProduct({
       ...product4Data,
       quantity: 2,
       CustomerId: order3.CustomerId,
