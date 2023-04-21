@@ -9,9 +9,16 @@ if (env.NODE_ENV === "production") {
 (async () => {
   await withDatabase(async (db) => {
     await db.customer.truncate();
-    await db.customer.create({
+    await db.order.truncate();
+
+    const customer = await db.customer.create({
       name: "Some customer",
     });
+
+    await customer.createOrder();
+    await customer.createOrder();
+    await customer.createOrder();
+    await customer.createOrder();
   });
 })().catch((e) => {
   console.log(e);

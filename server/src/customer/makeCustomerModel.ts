@@ -1,11 +1,24 @@
 import {
+  Association,
   CreationOptional,
   DataTypes,
+  HasManyAddAssociationMixin,
+  HasManyAddAssociationsMixin,
+  HasManyCountAssociationsMixin,
+  HasManyCreateAssociationMixin,
+  HasManyGetAssociationsMixin,
+  HasManyHasAssociationMixin,
+  HasManyHasAssociationsMixin,
+  HasManyRemoveAssociationMixin,
+  HasManyRemoveAssociationsMixin,
+  HasManySetAssociationsMixin,
   InferAttributes,
   InferCreationAttributes,
   Model,
+  NonAttribute,
   Sequelize,
 } from "sequelize";
+import { Order } from "../order/makeOrderModel";
 
 export class Customer extends Model<
   InferAttributes<Customer>,
@@ -15,6 +28,22 @@ export class Customer extends Model<
   declare name: string;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
+
+  declare getOrders: HasManyGetAssociationsMixin<Order>;
+  declare addOrder: HasManyAddAssociationMixin<Order, number>;
+  declare addOrders: HasManyAddAssociationsMixin<Order, number>;
+  declare setOrders: HasManySetAssociationsMixin<Order, number>;
+  declare removeOrder: HasManyRemoveAssociationMixin<Order, number>;
+  declare removeOrders: HasManyRemoveAssociationsMixin<Order, number>;
+  declare hasOrder: HasManyHasAssociationMixin<Order, number>;
+  declare hasOrders: HasManyHasAssociationsMixin<Order, number>;
+  declare countOrders: HasManyCountAssociationsMixin;
+  declare createOrder: HasManyCreateAssociationMixin<Order, "customerId">;
+  declare orders?: NonAttribute<Order[]>;
+
+  declare static associations: {
+    orders: Association<Customer, Order>;
+  };
 }
 
 export function makeCustomerModel(sequelize: Sequelize) {

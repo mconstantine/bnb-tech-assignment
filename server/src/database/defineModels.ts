@@ -1,8 +1,10 @@
 import { Sequelize } from "sequelize";
 import { Customer, makeCustomerModel } from "../customer/makeCustomerModel";
+import { Order, makeOrderModel } from "../order/makeOrderModel";
 
 export interface DatabaseContext {
   customer: typeof Customer;
+  order: typeof Order;
 }
 
 export async function defineModels(
@@ -10,5 +12,6 @@ export async function defineModels(
 ): Promise<DatabaseContext> {
   return {
     customer: makeCustomerModel(sequelize),
+    order: makeOrderModel(sequelize),
   };
 }
