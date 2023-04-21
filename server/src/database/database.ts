@@ -41,9 +41,7 @@ async function initDatabaseSingleton(): Promise<Database> {
       models: await defineModels(sequelize),
     };
 
-    await _database.sequelize.sync({
-      alter: env.NODE_ENV === "development" || env.NODE_ENV === "test",
-    });
+    await _database.sequelize.sync();
   }
 
   return _database;
