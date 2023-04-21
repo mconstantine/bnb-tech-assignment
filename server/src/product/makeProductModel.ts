@@ -9,6 +9,7 @@ import {
   Sequelize,
 } from "sequelize";
 import { Order } from "../order/makeOrderModel";
+import { Customer } from "../customer/makeCustomerModel";
 
 export const ProductStatusProcessing = "Processing";
 export const ProductStatusDone = "Done";
@@ -30,6 +31,8 @@ export class Product extends Model<
 
   declare OrderId: ForeignKey<Order["id"]>;
   declare Order?: NonAttribute<Order>;
+  declare CustomerId: ForeignKey<Customer["id"]>;
+  declare Customer?: NonAttribute<Customer>;
 }
 
 export function makeProductModel(sequelize: Sequelize) {
@@ -61,11 +64,19 @@ export function makeProductModel(sequelize: Sequelize) {
     },
     {
       sequelize,
+      defaultScope: {
+        attributes: {
+          exclude: ["CustomerId"],
+        },
+      },
     }
   );
 
   Order.hasMany(Product);
   Product.belongsTo(Order);
+
+  Customer.hasMany(Product);
+  Product.belongsTo(Customer);
 
   return Product;
 }

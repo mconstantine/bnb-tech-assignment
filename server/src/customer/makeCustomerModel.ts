@@ -19,6 +19,7 @@ import {
   Sequelize,
 } from "sequelize";
 import { Order } from "../order/makeOrderModel";
+import { Product } from "../product/makeProductModel";
 
 export class Customer extends Model<
   InferAttributes<Customer>,
@@ -40,9 +41,11 @@ export class Customer extends Model<
   declare countOrders: HasManyCountAssociationsMixin;
   declare createOrder: HasManyCreateAssociationMixin<Order, "CustomerId">;
   declare Orders?: NonAttribute<Order[]>;
+  declare Products?: NonAttribute<Product[]>;
 
   declare static associations: {
     orders: Association<Customer, Order>;
+    products: Association<Customer, Product>;
   };
 }
 

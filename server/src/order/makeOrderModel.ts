@@ -72,6 +72,11 @@ export function makeOrderModel(sequelize: Sequelize) {
     },
     {
       sequelize,
+      defaultScope: {
+        attributes: {
+          exclude: ["CustomerId"],
+        },
+      },
     }
   );
 

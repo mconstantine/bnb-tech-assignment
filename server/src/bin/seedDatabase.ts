@@ -10,6 +10,7 @@ if (env.NODE_ENV === "production") {
   await withDatabase(async (db) => {
     await db.customer.truncate();
     await db.order.truncate();
+    await db.product.truncate();
 
     const customer = await db.customer.create({
       name: "Some customer",
@@ -44,51 +45,61 @@ if (env.NODE_ENV === "production") {
     await order1.createProduct({
       ...product1Data,
       quantity: 2,
+      CustomerId: order1.CustomerId,
     });
 
-    await order1.createProduct({
+    order1.createProduct({
       ...product2Data,
       quantity: 1,
+      CustomerId: order1.CustomerId,
     });
 
-    await order1.createProduct({
+    order1.createProduct({
       ...product3Data,
       quantity: 3,
+      CustomerId: order1.CustomerId,
     });
 
-    await order1.createProduct({
+    order1.createProduct({
       ...product4Data,
       quantity: 4,
+      CustomerId: order1.CustomerId,
     });
 
     await order2.createProduct({
       ...product1Data,
       quantity: 1,
+      CustomerId: order2.CustomerId,
     });
 
     await order2.createProduct({
       ...product1Data,
       quantity: 1,
+      CustomerId: order2.CustomerId,
     });
 
     await order2.createProduct({
       ...product3Data,
       quantity: 4,
+      CustomerId: order2.CustomerId,
     });
 
-    await order3.createProduct({
+    await order2.createProduct({
       ...product2Data,
       quantity: 2,
+      CustomerId: order3.CustomerId,
     });
 
-    await order3.createProduct({
+    await order2.createProduct({
       ...product2Data,
       quantity: 2,
+      CustomerId: order3.CustomerId,
     });
 
-    await order3.createProduct({
+    await order2.createProduct({
       ...product4Data,
       quantity: 2,
+      CustomerId: order3.CustomerId,
     });
   });
 })().catch((e) => {
