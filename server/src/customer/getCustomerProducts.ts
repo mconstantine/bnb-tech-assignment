@@ -8,6 +8,7 @@ export async function getCustomerProducts(
   const customer = await withDatabase((db) =>
     db.customer.findByPk(customerId, {
       include: Product,
+      order: [["createdAt", "DESC"]],
     })
   );
 

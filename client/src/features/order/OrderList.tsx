@@ -5,11 +5,7 @@ import {
   selectOrderList,
   updateOrder,
 } from "./orderListSlice";
-import {
-  ListItemState,
-  NetworkList,
-  NetworkListItemState,
-} from "../../components/NetworkList";
+import { ListItemState, NetworkList } from "../../components/NetworkList";
 import { sendNetworkRequest } from "../network";
 import { formatDate } from "../../formatUtils";
 import { ProductStatus } from "../product/productListSlice";
@@ -75,8 +71,8 @@ export function OrderList() {
 
 function getOrderStatus(order: Order): ProductStatus {
   if (order.Products.some((product) => product.status === "Processing")) {
-    return "Processing";
+    return ProductStatus.Processing;
   } else {
-    return "Done";
+    return ProductStatus.Done;
   }
 }

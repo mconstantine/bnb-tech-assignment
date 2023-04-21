@@ -1,5 +1,11 @@
 import "./NetworkList.css";
-import { FormEventHandler, useEffect, useState } from "react";
+import {
+  Dispatch,
+  FormEventHandler,
+  SetStateAction,
+  useEffect,
+  useState,
+} from "react";
 import { NetworkState as INetworkState } from "../features/network";
 import { NetworkState } from "./NetworkState";
 import { ServerError } from "../ServerError";
@@ -35,7 +41,10 @@ interface ListProps<T> {
   fetchItems: () => void;
   sendUpdateItemRequest: (item: T) => Promise<T>;
   onSuccessfulUpdate: (updatedItem: T) => void;
-  renderCommands: (state: ListItemState<T>) => JSX.Element | JSX.Element[];
+  renderCommands: (
+    state: ListItemState<T>,
+    setState: Dispatch<SetStateAction<ListItemState<T>>>
+  ) => JSX.Element | JSX.Element[] | null;
 }
 
 export function NetworkList<T extends { id: number }>(props: ListProps<T>) {
@@ -59,11 +68,13 @@ export function NetworkList<T extends { id: number }>(props: ListProps<T>) {
                   key={item.id}
                   item={item}
                   getLabel={(state) => props.getLabel(state)}
-                  sendUpdateItemRequest={() =>
+                  sendUpdateItemRequest={(item: T) =>
                     props.sendUpdateItemRequest(item)
                   }
                   onSuccessfulUpdate={props.onSuccessfulUpdate}
-                  renderCommands={(state) => props.renderCommands(state)}
+                  renderCommands={(state, setState) =>
+                    props.renderCommands(state, setState)
+                  }
                 />
               ))}
             </>
@@ -77,9 +88,12 @@ export function NetworkList<T extends { id: number }>(props: ListProps<T>) {
 interface ListItemProps<T> {
   item: T;
   getLabel: (state: ListItemState<T>) => string;
-  sendUpdateItemRequest: () => Promise<T>;
+  sendUpdateItemRequest: (item: T) => Promise<T>;
   onSuccessfulUpdate: (updatedItem: T) => void;
-  renderCommands: (state: ListItemState<T>) => JSX.Element | JSX.Element[];
+  renderCommands: (
+    state: ListItemState<T>,
+    setState: Dispatch<SetStateAction<ListItemState<T>>>
+  ) => JSX.Element | JSX.Element[] | null;
 }
 
 function ListItem<T>(props: ListItemProps<T>) {
@@ -98,7 +112,7 @@ function ListItem<T>(props: ListItemProps<T>) {
     }));
 
     try {
-      const data = await props.sendUpdateItemRequest();
+      const data = await props.sendUpdateItemRequest(state.currentValue);
 
       setState({
         currentValue: data,
@@ -124,10 +138,30 @@ function ListItem<T>(props: ListItemProps<T>) {
     }
   };
 
+  const setStateTrackChanges: Dispatch<SetStateAction<ListItemState<T>>> = (
+    setStateAction
+  ) => {
+    if (typeof setStateAction === "function") {
+      setState((state) => {
+        return {
+          ...setStateAction(state),
+          didChange: true,
+        };
+      });
+    } else {
+      setState({
+        ...setStateAction,
+        didChange: true,
+      });
+    }
+  };
+
   return (
     <div className="NetworkListItem" role="listitem">
       <p>{props.getLabel(state)}</p>
-      <form onSubmit={onSubmit}>{props.renderCommands(state)}</form>
+      <form onSubmit={onSubmit}>
+        {props.renderCommands(state, setStateTrackChanges)}
+      </form>
     </div>
   );
 }

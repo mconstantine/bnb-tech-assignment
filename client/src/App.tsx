@@ -3,6 +3,7 @@ import "./App.css";
 import { OrderList } from "./features/order/OrderList";
 import { Page, selectPage } from "./features/page/pageSlice";
 import { Header } from "./components/Header";
+import { ProductList } from "./features/product/ProductList";
 
 export function App() {
   const page = useSelector(selectPage);
@@ -12,7 +13,7 @@ export function App() {
       case Page.Orders:
         return <OrderList />;
       case Page.Products:
-        return <p>TODO:</p>;
+        return <ProductList />;
     }
   })();
 
