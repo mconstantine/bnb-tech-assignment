@@ -1,7 +1,18 @@
 import {
+  Association,
   CreationOptional,
   DataTypes,
   ForeignKey,
+  HasManyAddAssociationMixin,
+  HasManyAddAssociationsMixin,
+  HasManyCountAssociationsMixin,
+  HasManyCreateAssociationMixin,
+  HasManyGetAssociationsMixin,
+  HasManyHasAssociationMixin,
+  HasManyHasAssociationsMixin,
+  HasManyRemoveAssociationMixin,
+  HasManyRemoveAssociationsMixin,
+  HasManySetAssociationsMixin,
   InferAttributes,
   InferCreationAttributes,
   Model,
@@ -9,8 +20,9 @@ import {
   Sequelize,
 } from "sequelize";
 import { Customer } from "../customer/makeCustomerModel";
+import { Product } from "../product/makeProductModel";
 
-enum OrderStatus {
+export enum OrderStatus {
   Processing = "Processing",
   Done = "Done",
 }
@@ -20,12 +32,28 @@ export class Order extends Model<
   InferCreationAttributes<Order>
 > {
   declare id: CreationOptional<number>;
-  declare status: OrderStatus;
+  declare status: CreationOptional<OrderStatus>;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 
   declare customerId: ForeignKey<Customer["id"]>;
   declare customer?: NonAttribute<Customer>;
+
+  declare getProducts: HasManyGetAssociationsMixin<Product>;
+  declare addProduct: HasManyAddAssociationMixin<Product, number>;
+  declare addProducts: HasManyAddAssociationsMixin<Product, number>;
+  declare setProducts: HasManySetAssociationsMixin<Product, number>;
+  declare removeProduct: HasManyRemoveAssociationMixin<Product, number>;
+  declare removeProducts: HasManyRemoveAssociationsMixin<Product, number>;
+  declare hasProduct: HasManyHasAssociationMixin<Product, number>;
+  declare hasProducts: HasManyHasAssociationsMixin<Product, number>;
+  declare countProducts: HasManyCountAssociationsMixin;
+  declare createProduct: HasManyCreateAssociationMixin<Product, "orderId">;
+  declare orders?: NonAttribute<Order[]>;
+
+  declare static associations: {
+    products: Association<Order, Product>;
+  };
 }
 
 export function makeOrderModel(sequelize: Sequelize) {
