@@ -5,6 +5,7 @@ import { env } from "./env";
 import { withDatabase } from "./database/database";
 import { makeCustomerRoutes } from "./customer/makeCustomerRoutes";
 import { makeOrderRoutes } from "./order/makeOrderRoutes";
+import { makeProductRoutes } from "./product/makeProductRoutes";
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.get("/", (_req, res) => {
 
 app.use("/customers", makeCustomerRoutes());
 app.use("/orders", makeOrderRoutes());
+app.use("/products", makeProductRoutes());
 
 withDatabase(() => Promise.resolve()).then(
   () => {

@@ -1,8 +1,13 @@
 import { Router } from "express";
 import { getCustomer } from "./getCustomer";
 import { makeEndpoint } from "../utils/makeEndpoint";
-import { GetCustomerParams, GetCustomerOrdersParams } from "./domain";
+import {
+  GetCustomerParams,
+  GetCustomerOrdersParams,
+  GetCustomerProductsParams,
+} from "./domain";
 import { getCustomerOrders } from "./getCustomerOrders";
+import { getCustomerProducts } from "./getCustomerProducts";
 
 export function makeCustomerRoutes(): Router {
   const router = Router();
@@ -16,6 +21,12 @@ export function makeCustomerRoutes(): Router {
   router.get("/:id/orders", (req, res) =>
     makeEndpoint(GetCustomerOrdersParams, req.params, res, ({ id }) =>
       getCustomerOrders(id)
+    )
+  );
+
+  router.get("/:id/products", (req, res) =>
+    makeEndpoint(GetCustomerProductsParams, req.params, res, ({ id }) =>
+      getCustomerProducts(id)
     )
   );
 
