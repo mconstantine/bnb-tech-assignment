@@ -8,10 +8,12 @@ import {
 import { AppThunk, RootState } from "../../app/store";
 import { env } from "../../env";
 import { ServerError } from "../../ServerError";
+import { Product } from "../product/productListSlice";
 
 export interface Order {
   id: number;
   createdAt: string;
+  Products: Product[];
 }
 
 type OrderListState = NetworkState<Order[]>;

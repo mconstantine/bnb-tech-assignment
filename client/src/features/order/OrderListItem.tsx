@@ -5,6 +5,7 @@ import { Order, updateOrder } from "./orderListSlice";
 import { NetworkState, sendNetworkRequest } from "../utils";
 import { ServerError } from "../../ServerError";
 import { useAppDispatch } from "../../app/hooks";
+import { ProductStatus } from "../product/productListSlice";
 
 interface Props {
   order: Order;
@@ -13,15 +14,15 @@ interface Props {
 export function OrderListItem(props: Props) {
   const dispatch = useAppDispatch();
 
-  const [state, setState] = useState<NetworkState<Order>>({
+  const [networkStatus, setNetworkStatus] = useState<NetworkState<null>>({
     status: "success",
-    data: props.order,
+    data: null,
   });
 
   const onSubmit: FormEventHandler<HTMLFormElement> = async (event) => {
     event.preventDefault();
 
-    setState({ status: "loading" });
+    setNetworkStatus({ status: "loading" });
 
     try {
       const data = await sendNetworkRequest<Order>({
@@ -29,17 +30,17 @@ export function OrderListItem(props: Props) {
         method: "PATCH",
       });
 
-      setState({ status: "success", data });
+      setNetworkStatus({ status: "success", data: null });
       dispatch(updateOrder(data));
     } catch (e) {
       if (e instanceof ServerError) {
         const serverError = e as ServerError;
-        setState((state) => ({
+        setNetworkStatus((state) => ({
           ...state,
           networkState: { status: "failure", code: serverError.code },
         }));
       } else {
-        setState((state) => ({
+        setNetworkStatus((state) => ({
           ...state,
           networkState: { status: "failure", code: 500 },
         }));
@@ -48,23 +49,40 @@ export function OrderListItem(props: Props) {
   };
 
   const label = (() => {
-    switch (state.status) {
+    switch (networkStatus.status) {
       case "loading":
         return "Saving…";
       case "failure":
-        return `Error (code ${state.code})`;
+        return `Error (code ${networkStatus.code})`;
       case "success":
-        return formatDateTime(new Date(state.data.createdAt));
+        return formatDateTime(new Date(props.order.createdAt));
     }
   })();
 
-  const isUIDisabled = state.status === "loading";
+  const status: ProductStatus = (() => {
+    if (
+      props.order.Products.some((product) => product.status === "Processing")
+    ) {
+      return "Processing";
+    } else {
+      return "Done";
+    }
+  })();
+
+  const isUIDisabled = networkStatus.status === "loading";
+  const isSetAsDoneButtonDisabled = status === "Done";
 
   return (
     <div className="OrderListItem" role="listitem">
-      <p>{label}</p>
+      <p>
+        {label} ({status})
+      </p>
       <form onSubmit={onSubmit}>
-        <input type="submit" value="Set as done" disabled={isUIDisabled} />
+        <input
+          type="submit"
+          value="Set as done"
+          disabled={isUIDisabled || isSetAsDoneButtonDisabled}
+        />
       </form>
     </div>
   );

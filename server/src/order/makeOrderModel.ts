@@ -43,7 +43,7 @@ export class Order extends Model<
   declare hasProducts: HasManyHasAssociationsMixin<Product, number>;
   declare countProducts: HasManyCountAssociationsMixin;
   declare createProduct: HasManyCreateAssociationMixin<Product, "OrderId">;
-  declare Products?: NonAttribute<Order[]>;
+  declare Products?: NonAttribute<Product[]>;
 
   declare static associations: {
     products: Association<Order, Product>;

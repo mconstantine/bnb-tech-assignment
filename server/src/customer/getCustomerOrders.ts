@@ -5,7 +5,10 @@ import { Order } from "../order/makeOrderModel";
 export async function getCustomerOrders(customerId: number): Promise<Order[]> {
   const customer = await withDatabase((db) =>
     db.customer.findByPk(customerId, {
-      include: db.order,
+      include: {
+        model: db.order,
+        include: [db.product],
+      },
       order: [["createdAt", "DESC"]],
     })
   );
