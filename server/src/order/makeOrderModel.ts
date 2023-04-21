@@ -36,8 +36,8 @@ export class Order extends Model<
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 
-  declare customerId: ForeignKey<Customer["id"]>;
-  declare customer?: NonAttribute<Customer>;
+  declare CustomerId: ForeignKey<Customer["id"]>;
+  declare Customer?: NonAttribute<Customer>;
 
   declare getProducts: HasManyGetAssociationsMixin<Product>;
   declare addProduct: HasManyAddAssociationMixin<Product, number>;
@@ -48,8 +48,8 @@ export class Order extends Model<
   declare hasProduct: HasManyHasAssociationMixin<Product, number>;
   declare hasProducts: HasManyHasAssociationsMixin<Product, number>;
   declare countProducts: HasManyCountAssociationsMixin;
-  declare createProduct: HasManyCreateAssociationMixin<Product, "orderId">;
-  declare orders?: NonAttribute<Order[]>;
+  declare createProduct: HasManyCreateAssociationMixin<Product, "OrderId">;
+  declare Products?: NonAttribute<Order[]>;
 
   declare static associations: {
     products: Association<Order, Product>;

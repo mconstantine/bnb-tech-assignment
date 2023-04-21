@@ -27,8 +27,8 @@ export class Product extends Model<
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 
-  declare orderId: ForeignKey<Order["id"]>;
-  declare order?: NonAttribute<Order>;
+  declare OrderId: ForeignKey<Order["id"]>;
+  declare Order?: NonAttribute<Order>;
 }
 
 export function makeProductModel(sequelize: Sequelize) {

@@ -38,8 +38,8 @@ export class Customer extends Model<
   declare hasOrder: HasManyHasAssociationMixin<Order, number>;
   declare hasOrders: HasManyHasAssociationsMixin<Order, number>;
   declare countOrders: HasManyCountAssociationsMixin;
-  declare createOrder: HasManyCreateAssociationMixin<Order, "customerId">;
-  declare orders?: NonAttribute<Order[]>;
+  declare createOrder: HasManyCreateAssociationMixin<Order, "CustomerId">;
+  declare Orders?: NonAttribute<Order[]>;
 
   declare static associations: {
     orders: Association<Customer, Order>;
