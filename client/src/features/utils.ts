@@ -2,10 +2,6 @@ import { PayloadAction } from "@reduxjs/toolkit";
 import { env } from "../env";
 import { ServerError } from "../ServerError";
 
-interface IdleNetworkState {
-  status: "idle";
-}
-
 interface LoadingNetworkState {
   status: "loading";
 }
@@ -21,16 +17,30 @@ interface FailedNetworkState {
 }
 
 export type NetworkState<T> =
-  | IdleNetworkState
   | LoadingNetworkState
   | SuccessfulNetworkState<T>
   | FailedNetworkState;
+
+export function mapNetworkState<A, B>(
+  state: NetworkState<A>,
+  mapFn: (data: A) => B
+): NetworkState<B> {
+  switch (state.status) {
+    case "loading":
+    case "failure":
+      return state;
+    case "success":
+      return {
+        ...state,
+        data: mapFn(state.data),
+      };
+  }
+}
 
 export function makeNetworkReducers<T>() {
   return {
     isLoading: (state: NetworkState<T>): NetworkState<T> => {
       switch (state.status) {
-        case "idle":
         case "failure":
         case "success":
           return { status: "loading" };
@@ -43,7 +53,6 @@ export function makeNetworkReducers<T>() {
       action: PayloadAction<T>
     ): NetworkState<T> => {
       switch (state.status) {
-        case "idle":
         case "success":
         case "failure":
           return state;
@@ -56,7 +65,6 @@ export function makeNetworkReducers<T>() {
       action: PayloadAction<number>
     ): NetworkState<T> => {
       switch (state.status) {
-        case "idle":
         case "success":
         case "failure":
           return state;
@@ -67,7 +75,7 @@ export function makeNetworkReducers<T>() {
   };
 }
 
-type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";
+type HttpMethod = "GET" | "POST" | "PATCH" | "DELETE";
 
 interface NetworkRequest<I> {
   method: HttpMethod;
@@ -75,13 +83,19 @@ interface NetworkRequest<I> {
   input: I;
 }
 
-export async function makeNetworkRequest<I, O>(
+export function makeNetworkRequest<I>(
+  request: Omit<NetworkRequest<I>, "input">
+): (input: I) => NetworkRequest<I> {
+  return (input) => ({ ...request, input });
+}
+
+export async function sendNetworkRequest<I, O>(
   request: NetworkRequest<I>
 ): Promise<O>;
-export async function makeNetworkRequest<O>(
+export async function sendNetworkRequest<O>(
   request: Omit<NetworkRequest<void>, "input">
 ): Promise<O>;
-export async function makeNetworkRequest<I, O>(
+export async function sendNetworkRequest<I, O>(
   request: NetworkRequest<I> | Omit<NetworkRequest<void>, "input">
 ): Promise<O> {
   const response = await window.fetch(`${env.VITE_API_URL}${request.path}`, {
