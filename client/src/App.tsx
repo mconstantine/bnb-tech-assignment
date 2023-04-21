@@ -1,12 +1,27 @@
+import { useSelector } from "react-redux";
 import "./App.css";
-import { Provider } from "react-redux";
-import { store } from "./app/store";
 import { OrderList } from "./features/order/OrderList";
+import { Page, selectPage } from "./features/page/pageSlice";
+import { Header } from "./components/Header";
 
 export function App() {
+  const page = useSelector(selectPage);
+
+  const pageComponent = (() => {
+    switch (page) {
+      case Page.Orders:
+        return <OrderList />;
+      case Page.Products:
+        return <p>TODO:</p>;
+    }
+  })();
+
   return (
-    <Provider store={store}>
-      <OrderList />
-    </Provider>
+    <>
+      <header>
+        <Header />
+      </header>
+      <main>{pageComponent}</main>
+    </>
   );
 }

@@ -1,0 +1,25 @@
+header {
+  background-color: var(--color-green-medium);
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  padding-left: 5vw;
+  padding-right: 5vw;
+}
+
+header a {
+  color: inherit;
+  font-size: 14px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+header a.current {
+  text-decoration: none;
+  cursor: default;
+}
+
+header a + a {
+  margin-left: 1.5em;
+}
