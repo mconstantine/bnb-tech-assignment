@@ -3,6 +3,7 @@ import cors from "cors";
 import meta from "../package.json";
 import { env } from "./env";
 import { withDatabase } from "./database/database";
+import { makeCustomerRoutes } from "./customer/makeCustomerRoutes";
 
 const app = express();
 
@@ -13,6 +14,8 @@ app.get("/", (_req, res) => {
   const { name, version } = meta;
   res.json({ name, version });
 });
+
+app.use("/customers", makeCustomerRoutes());
 
 withDatabase(() => Promise.resolve()).then(
   () => {

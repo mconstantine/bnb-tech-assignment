@@ -24,6 +24,7 @@ async function initDatabaseSingleton(): Promise<Database> {
           return new Sequelize({
             dialect: "sqlite",
             storage: "data/database.sqlite",
+            logging: env.DB_LOGGING && console.log,
           });
         case "test":
         default:
