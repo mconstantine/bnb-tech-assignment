@@ -1,5 +1,5 @@
 import { Response } from "express";
-import { ZodType } from "zod";
+import { SafeParseError, ZodType } from "zod";
 import { ServerError } from "../ServerError";
 
 /**
@@ -48,7 +48,14 @@ export async function makeEndpoint<T, R>(
       }
     }
   } else {
-    res.status(422).json(parseResult.error);
+    handleParseError(parseResult, res);
     return;
   }
+}
+
+export function handleParseError<T>(
+  parseResult: SafeParseError<T>,
+  res: Response
+) {
+  res.status(422).json(parseResult.error);
 }

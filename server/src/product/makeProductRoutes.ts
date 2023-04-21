@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { UpdateProductInput, UpdateProductParams } from "./domain";
-import { makeEndpoint } from "../utils/makeEndpoint";
+import { handleParseError, makeEndpoint } from "../utils/makeEndpoint";
 import { updateProduct } from "./updateProduct";
 
 export function makeProductRoutes(): Router {
@@ -16,7 +16,7 @@ export function makeProductRoutes(): Router {
         updateProduct(id, data)
       );
     } else {
-      return res.status(422).end();
+      return handleParseError(paramsParseResult, res);
     }
   });
 
