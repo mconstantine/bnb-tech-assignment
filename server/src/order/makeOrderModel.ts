@@ -22,10 +22,9 @@ import {
 import { Customer } from "../customer/makeCustomerModel";
 import { Product } from "../product/makeProductModel";
 
-export enum OrderStatus {
-  Processing = "Processing",
-  Done = "Done",
-}
+export const OrderStatusProcessing = "Processing";
+export const OrderStatusDone = "Done";
+export type OrderStatus = typeof OrderStatusProcessing | typeof OrderStatusDone;
 
 export class Order extends Model<
   InferAttributes<Order>,
@@ -65,8 +64,8 @@ export function makeOrderModel(sequelize: Sequelize) {
         primaryKey: true,
       },
       status: {
-        type: DataTypes.ENUM(...Object.values(OrderStatus)),
-        defaultValue: OrderStatus.Processing,
+        type: DataTypes.ENUM(OrderStatusProcessing, OrderStatusDone),
+        defaultValue: OrderStatusProcessing,
       },
       createdAt: DataTypes.DATE,
       updatedAt: DataTypes.DATE,
