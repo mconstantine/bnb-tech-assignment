@@ -1,4 +1,4 @@
 import { IdParams } from "../globalDomain";
 
-export const GetCustomerInput = IdParams;
-export const GetCustomerOrdersInput = IdParams;
+export const GetCustomerParams = IdParams;
+export const GetCustomerOrdersParams = IdParams;
