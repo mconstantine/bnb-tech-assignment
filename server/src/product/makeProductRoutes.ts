@@ -6,7 +6,7 @@ import { updateProduct } from "./updateProduct";
 export function makeProductRoutes(): Router {
   const router = Router();
 
-  router.put("/:id", (req, res) => {
+  router.patch("/:id", (req, res) => {
     const paramsParseResult = UpdateProductParams.safeParse(req.params);
 
     if (paramsParseResult.success) {

@@ -6,7 +6,7 @@ import { updateOrder } from "./updateOrder";
 export function makeOrderRoutes(): Router {
   const router = Router();
 
-  router.put("/:id", (req, res) => {
+  router.patch("/:id", (req, res) => {
     const paramsParseResult = UpdateOrderParams.safeParse(req.params);
 
     if (paramsParseResult.success) {
