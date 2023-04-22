@@ -1,4 +1,3 @@
-import { Dispatch, FormEventHandler, SetStateAction } from "react";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { ListItemState, NetworkList } from "../../components/NetworkList";
 import { mapNetworkState, sendNetworkRequest } from "../network";
@@ -9,149 +8,224 @@ import {
   selectProductList,
   updateProduct,
 } from "./productListSlice";
+import { formatDate } from "../../formatUtils";
+import { SublistItem } from "../../components/NetworkList";
+import { Dispatch, FormEventHandler, SetStateAction } from "react";
+import { NetworkListItemState } from "../../components/NetworkList";
 import { UpdateProductInput } from "./api";
 
-// We group the product by SKU and orderId, summing up the quantitites and chain the IDs
+// Products aggregated by SKU maintain an array of the original IDs and quanitites
+interface AggregatedProduct extends Omit<Product, "id"> {
+  originalData: Array<{
+    id: number;
+    quantity: number;
+  }>;
+}
 
-interface AggregatedProductList {
-  [orderId: number]: {
-    [sku: string]: Product;
-  };
+interface ProductByOrder {
+  id: number;
+  orderDate: Date;
+  products: AggregatedProduct[];
 }
 
 export function ProductList() {
   const productListState = useAppSelector(selectProductList);
   const dispatch = useAppDispatch();
 
-  const aggregatedProductListState = mapNetworkState(
-    productListState,
-    (products) =>
-      products.reduce<AggregatedProductList>((res, product) => {
-        if (product.OrderId in res) {
-          if (product.sku in (res[product.OrderId] || {})) {
-            // We just verified that the key exists and it can only be an object
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            res[product.OrderId]![product.sku] = {
-              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              ...res[product.OrderId]![product.sku]!,
-              quantity:
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                res[product.OrderId]![product.sku]!.quantity + product.quantity,
-            };
-          } else {
-            // We just verified that the key exists and it can only be an object
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            res[product.OrderId]![product.sku] = product;
+  const productsByOrder = mapNetworkState(productListState, (products) =>
+    products.reduce<ProductByOrder[]>((res, product) => {
+      let didFindOrder = false;
+
+      for (const order of res) {
+        if (order.id === product.OrderId) {
+          didFindOrder = true;
+          let didFindProduct = false;
+
+          for (const orderProduct of order.products) {
+            if (orderProduct.sku === product.sku) {
+              didFindProduct = true;
+
+              orderProduct.originalData.push({
+                id: product.id,
+                quantity: product.quantity,
+              });
+
+              orderProduct.quantity += product.quantity;
+              break;
+            }
           }
-        } else {
-          res[product.OrderId] = {
-            [product.sku]: product,
-          };
+
+          if (!didFindProduct) {
+            order.products.push({
+              ...product,
+              originalData: [
+                {
+                  id: product.id,
+                  quantity: product.quantity,
+                },
+              ],
+            });
+          }
+
+          break;
         }
+      }
 
-        return res;
-      }, {})
-  );
+      if (!didFindOrder) {
+        res.push({
+          id: product.OrderId,
+          orderDate: new Date(product.Order.createdAt),
+          products: [
+            {
+              ...product,
+              originalData: [
+                {
+                  id: product.id,
+                  quantity: product.quantity,
+                },
+              ],
+            },
+          ],
+        });
+      }
 
-  // Turn the aggregation back into an array
-  const aggregatedProducts = mapNetworkState<AggregatedProductList, Product[]>(
-    aggregatedProductListState,
-    (state) =>
-      Object.values(state).reduce(
-        (res, skuProductRecord) => [...res, ...Object.values(skuProductRecord)],
-        []
-      )
+      return res;
+    }, [])
   );
 
   const fetchProducts = () => {
     dispatch(fetchProductList());
   };
 
-  const getProductLabel = (state: ListItemState<Product>) => {
+  const getOrderLabel = (state: ListItemState<ProductByOrder>) => {
     switch (state.networkState.status) {
       case "loading":
         return "Saving…";
       case "failure":
         return `Error (code ${state.networkState.code})`;
       case "ready": {
-        return `${state.currentValue.quantity}x ${state.currentValue.name}`;
+        return formatDate(state.currentValue.orderDate);
       }
     }
   };
 
-  const sendUpdateProductRequest = (product: Product) => {
-    // Quantities here are aggregated, so we allow to only update the status
-    switch (productListState.status) {
-      case "loading":
-      case "failure":
-        return Promise.resolve(product);
-      case "success": {
-        const originalProduct = productListState.data.find(
-          ({ id }) => id === product.id
-        );
+  const sendUpdateProductRequest = (product: ProductByOrder) =>
+    Promise.resolve(product);
 
-        if (!originalProduct) {
-          return Promise.resolve(product);
-        } else {
-          return sendNetworkRequest<UpdateProductInput, Product>({
-            path: `/products/${product.id}/`,
+  const onProductUpdate = () => {
+    return;
+  };
+
+  const renderProductsList = (
+    state: ListItemState<ProductByOrder>,
+    setState: Dispatch<SetStateAction<ListItemState<ProductByOrder>>>
+  ): SublistItem<AggregatedProduct>[] => {
+    const sendUpdateProductsRequest = async (
+      product: AggregatedProduct
+    ): Promise<AggregatedProduct> => {
+      const products = await Promise.all(
+        product.originalData.map((originalData) =>
+          sendNetworkRequest<UpdateProductInput, Product>({
+            path: `/products/${originalData.id}`,
             method: "PATCH",
             input: {
-              quantity: originalProduct.quantity,
+              quantity: originalData.quantity,
               status: product.status,
             },
+          })
+        )
+      );
+
+      return products.slice(1).reduce<AggregatedProduct>(
+        (res, product) => {
+          res.originalData.push({
+            id: product.id,
+            quantity: product.quantity,
           });
-        }
-      }
-    }
-  };
 
-  const onProductUpdate = (product: Product) => {
-    dispatch(updateProduct(product));
-  };
-
-  const renderCommands = (
-    state: ListItemState<Product>,
-    setState: Dispatch<SetStateAction<ListItemState<Product>>>
-  ) => {
-    const onStatusChange: FormEventHandler<HTMLSelectElement> = (event) => {
-      const value = event.currentTarget.value as ProductStatus;
-
-      setState((state) => ({
-        ...state,
-        currentValue: {
-          ...state.currentValue,
-          status: value,
+          return res;
         },
-      }));
+        {
+          ...products[0],
+          originalData: [
+            {
+              // We are updating an aggregated product, so the products it comes from definitely exist
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              id: products[0]!.id,
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              quantity: products[0]!.quantity,
+            },
+          ],
+        } as AggregatedProduct
+      );
     };
 
-    const isSubmitButtonDisabled =
-      !state.didChange || state.networkState.status === "loading";
+    return state.currentValue.products.map((product) => ({
+      subject: product,
+      getLabel: (product: AggregatedProduct) =>
+        `${product.quantity}x ${product.name}`,
+      renderCommands: (networkState: NetworkListItemState) => {
+        const onStatusChange: FormEventHandler<HTMLSelectElement> = (event) => {
+          const status = event.currentTarget.value as ProductStatus;
 
-    return (
-      <>
-        <select value={state.currentValue.status} onChange={onStatusChange}>
-          {Object.entries(ProductStatus).map(([label, value]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
-        <input type="submit" value="Save" disabled={isSubmitButtonDisabled} />
-      </>
-    );
+          setState((state) => ({
+            ...state,
+            currentValue: {
+              ...state.currentValue,
+              products: state.currentValue.products.map((p) => {
+                if (p.sku === product.sku) {
+                  return { ...p, status };
+                } else {
+                  return p;
+                }
+              }),
+            },
+          }));
+        };
+
+        const isUIDisabled = networkState.status === "loading";
+
+        return (
+          <>
+            <select
+              value={product.status}
+              onChange={onStatusChange}
+              disabled={isUIDisabled}
+            >
+              {Object.entries(ProductStatus).map(([key, label]) => (
+                <option key={key} value={key}>
+                  {label}
+                </option>
+              ))}
+            </select>
+            <input type="submit" value="Save" disabled={isUIDisabled} />
+          </>
+        );
+      },
+      sendUpdateItemRequest: sendUpdateProductsRequest,
+      onSuccessfulUpdate: (updatedProduct: AggregatedProduct) => {
+        updatedProduct.originalData.forEach((originalData) => {
+          dispatch(
+            updateProduct({
+              ...product,
+              ...originalData,
+            })
+          );
+        });
+      },
+    }));
   };
 
   return (
     <NetworkList
       title="Your Products"
-      state={aggregatedProducts}
-      getLabel={getProductLabel}
+      state={productsByOrder}
+      getLabel={getOrderLabel}
       fetchItems={fetchProducts}
       sendUpdateItemRequest={sendUpdateProductRequest}
       onSuccessfulUpdate={onProductUpdate}
-      renderCommands={renderCommands}
+      renderCommands={() => null}
+      renderSublist={renderProductsList}
     />
   );
 }

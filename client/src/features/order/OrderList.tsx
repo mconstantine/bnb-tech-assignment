@@ -19,7 +19,7 @@ import {
   updateProduct,
 } from "../product/productListSlice";
 import { NumberInput } from "../../components/NumberInput";
-import { Dispatch, FormEventHandler, SetStateAction } from "react";
+import { Dispatch, SetStateAction } from "react";
 import { UpdateProductInput } from "../product/api";
 
 export function OrderList() {
@@ -30,7 +30,7 @@ export function OrderList() {
     dispatch(fetchOrderList());
   };
 
-  const sendOrderUpdateOrderRequest = (order: Order) =>
+  const sendUpdateOrderRequest = (order: Order) =>
     sendNetworkRequest<Order>({
       path: `/orders/${order.id}/done/`,
       method: "PATCH",
@@ -40,7 +40,7 @@ export function OrderList() {
     dispatch(updateOrder(order));
   };
 
-  const sendProductUpdateRequest = (product: Product) =>
+  const sendUpdateProductRequest = (product: Product) =>
     sendNetworkRequest<UpdateProductInput, Product>({
       path: `/products/${product.id}/`,
       method: "PATCH",
@@ -106,33 +106,8 @@ export function OrderList() {
           }));
         };
 
-        const onStatusChange: FormEventHandler<HTMLSelectElement> = (event) => {
-          const status = event.currentTarget.value as ProductStatus;
-
-          setState((state) => ({
-            ...state,
-            currentValue: {
-              ...state.currentValue,
-              Products: state.currentValue.Products.map((p) => {
-                if (p.id === product.id) {
-                  return { ...p, status };
-                } else {
-                  return p;
-                }
-              }),
-            },
-          }));
-        };
-
         return (
           <>
-            <select value={product.status} onChange={onStatusChange}>
-              {Object.entries(ProductStatus).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
             <NumberInput
               count={product.quantity}
               min={1}
@@ -147,7 +122,7 @@ export function OrderList() {
       return {
         subject: product,
         getLabel: (product) => product.name,
-        sendUpdateItemRequest: sendProductUpdateRequest,
+        sendUpdateItemRequest: sendUpdateProductRequest,
         onSuccessfulUpdate: onProductUpdate,
         renderCommands,
       };
@@ -159,7 +134,7 @@ export function OrderList() {
       state={state}
       getLabel={getOrderLabel}
       fetchItems={fetchOrders}
-      sendUpdateItemRequest={sendOrderUpdateOrderRequest}
+      sendUpdateItemRequest={sendUpdateOrderRequest}
       onSuccessfulUpdate={onOrderUpdate}
       renderCommands={renderCommands}
       renderSublist={renderSublist}
