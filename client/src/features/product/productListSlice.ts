@@ -21,6 +21,9 @@ export interface Product {
   quantity: number;
   status: ProductStatus;
   OrderId: number;
+  Order: {
+    createdAt: string;
+  };
 }
 
 type ProductListState = NetworkState<Product[]>;

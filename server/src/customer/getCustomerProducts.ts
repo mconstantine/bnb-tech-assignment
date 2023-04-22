@@ -7,7 +7,15 @@ export async function getCustomerProducts(
 ): Promise<Product[]> {
   const customer = await withDatabase((db) =>
     db.customer.findByPk(customerId, {
-      include: Product,
+      include: {
+        model: db.product,
+        include: [
+          {
+            model: db.order,
+            attributes: ["createdAt"],
+          },
+        ],
+      },
       order: [["createdAt", "DESC"]],
     })
   );
