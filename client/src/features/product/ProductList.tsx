@@ -109,13 +109,6 @@ export function ProductList() {
     }
   };
 
-  const sendUpdateProductRequest = (product: ProductByOrder) =>
-    Promise.resolve(product);
-
-  const onProductUpdate = () => {
-    return;
-  };
-
   const renderProductsList = (
     state: ListItemState<ProductByOrder>,
     setState: Dispatch<SetStateAction<ListItemState<ProductByOrder>>>
@@ -160,11 +153,11 @@ export function ProductList() {
       );
     };
 
-    return state.currentValue.products.map((product) => ({
-      subject: product,
-      getLabel: (product: AggregatedProduct) =>
-        `${product.quantity}x ${product.name}`,
-      renderCommands: (networkState: NetworkListItemState) => {
+    const getProductLabel = (product: AggregatedProduct) =>
+      `${product.quantity}x ${product.name}`;
+
+    const renderProductCommands =
+      (product: AggregatedProduct) => (networkState: NetworkListItemState) => {
         const onStatusChange: FormEventHandler<HTMLSelectElement> = (event) => {
           const status = event.currentTarget.value as ProductStatus;
 
@@ -201,18 +194,25 @@ export function ProductList() {
             <input type="submit" value="Save" disabled={isUIDisabled} />
           </>
         );
-      },
+      };
+
+    const onProductUpdate = (updatedProduct: AggregatedProduct) => {
+      updatedProduct.originalData.forEach((originalData) => {
+        dispatch(
+          updateProduct({
+            ...updatedProduct,
+            ...originalData,
+          })
+        );
+      });
+    };
+
+    return state.currentValue.products.map((product) => ({
+      subject: product,
+      getLabel: getProductLabel,
+      renderCommands: renderProductCommands(product),
       sendUpdateItemRequest: sendUpdateProductsRequest,
-      onSuccessfulUpdate: (updatedProduct: AggregatedProduct) => {
-        updatedProduct.originalData.forEach((originalData) => {
-          dispatch(
-            updateProduct({
-              ...product,
-              ...originalData,
-            })
-          );
-        });
-      },
+      onSuccessfulUpdate: onProductUpdate,
     }));
   };
 
@@ -222,9 +222,6 @@ export function ProductList() {
       state={productsByOrder}
       getLabel={getOrderLabel}
       fetchItems={fetchProducts}
-      sendUpdateItemRequest={sendUpdateProductRequest}
-      onSuccessfulUpdate={onProductUpdate}
-      renderCommands={() => null}
       renderSublist={renderProductsList}
     />
   );
