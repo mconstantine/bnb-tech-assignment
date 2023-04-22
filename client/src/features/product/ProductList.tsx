@@ -119,7 +119,7 @@ export function ProductList() {
       const products = await Promise.all(
         product.originalData.map((originalData) =>
           sendNetworkRequest<UpdateProductInput, Product>({
-            path: `/products/${originalData.id}`,
+            path: `/products/${originalData.id}/`,
             method: "PATCH",
             input: {
               quantity: originalData.quantity,
