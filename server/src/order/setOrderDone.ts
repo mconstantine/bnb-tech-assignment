@@ -1,5 +1,6 @@
 import { ServerError } from "../ServerError";
 import { withDatabase } from "../database/database";
+import { ProductStatusDone } from "../product/makeProductModel";
 import { Order } from "./makeOrderModel";
 
 export async function setOrderDone(id: number): Promise<Order> {
@@ -11,12 +12,19 @@ export async function setOrderDone(id: number): Promise<Order> {
     throw new ServerError(404, `Order with id ${id} not found`);
   }
 
+  await withDatabase((db) =>
+    db.product.update(
+      { status: ProductStatusDone },
+      { where: { id: order.Products!.map((product) => product.id) } }
+    )
+  );
+
   await order.setProducts(
     order.Products!.map((product) => {
-      product.status = "Done";
+      product.status = ProductStatusDone;
       return product;
     })
   );
 
-  return order;
+  return await order.save();
 }

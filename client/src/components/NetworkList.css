@@ -1,5 +1,6 @@
 .NetworkListItem {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid var(--color-green-light);
@@ -14,4 +15,20 @@
 .NetworkListItem form,
 .NetworkListItem form > * + * {
   margin-left: 1em;
+}
+
+.NetworkListItem .sublist {
+  --current-background-color: #7500e9;
+  --current-foreground-color: #fff;
+
+  min-width: 100%;
+  box-sizing: border-box;
+  padding-left: 1.5em;
+  padding-right: 1.5em;
+}
+
+.NetworkListItem .sublist-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }

@@ -34,7 +34,17 @@ export interface ListItemState<T> {
   networkState: NetworkListItemState;
 }
 
-interface ListProps<T> {
+export interface SublistItem<T> {
+  subject: T;
+  getLabel: (subject: T) => string;
+  renderCommands: (
+    networkState: NetworkListItemState
+  ) => JSX.Element | JSX.Element[] | null;
+  sendUpdateItemRequest: (item: T) => Promise<T>;
+  onSuccessfulUpdate: (updatedItem: T) => void;
+}
+
+interface ListProps<T, S> {
   title: string;
   state: INetworkState<T[]>;
   getLabel: (state: ListItemState<T>) => string;
@@ -45,9 +55,17 @@ interface ListProps<T> {
     state: ListItemState<T>,
     setState: Dispatch<SetStateAction<ListItemState<T>>>
   ) => JSX.Element | JSX.Element[] | null;
+  renderSublist?:
+    | ((
+        state: ListItemState<T>,
+        setState: Dispatch<SetStateAction<ListItemState<T>>>
+      ) => SublistItem<S>[])
+    | undefined;
 }
 
-export function NetworkList<T extends { id: number }>(props: ListProps<T>) {
+export function NetworkList<T extends { id: number }, S>(
+  props: ListProps<T, S>
+) {
   const { fetchItems } = props;
 
   useEffect(() => {
@@ -68,13 +86,14 @@ export function NetworkList<T extends { id: number }>(props: ListProps<T>) {
                   key={item.id}
                   item={item}
                   getLabel={(state) => props.getLabel(state)}
-                  sendUpdateItemRequest={(item: T) =>
+                  sendUpdateItemRequest={(item) =>
                     props.sendUpdateItemRequest(item)
                   }
                   onSuccessfulUpdate={props.onSuccessfulUpdate}
                   renderCommands={(state, setState) =>
                     props.renderCommands(state, setState)
                   }
+                  renderSublist={props.renderSublist}
                 />
               ))}
             </>
@@ -85,7 +104,7 @@ export function NetworkList<T extends { id: number }>(props: ListProps<T>) {
   );
 }
 
-interface ListItemProps<T> {
+interface ListItemProps<T, S> {
   item: T;
   getLabel: (state: ListItemState<T>) => string;
   sendUpdateItemRequest: (item: T) => Promise<T>;
@@ -94,9 +113,15 @@ interface ListItemProps<T> {
     state: ListItemState<T>,
     setState: Dispatch<SetStateAction<ListItemState<T>>>
   ) => JSX.Element | JSX.Element[] | null;
+  renderSublist?:
+    | ((
+        state: ListItemState<T>,
+        setState: Dispatch<SetStateAction<ListItemState<T>>>
+      ) => SublistItem<S>[])
+    | undefined;
 }
 
-function ListItem<T>(props: ListItemProps<T>) {
+function ListItem<T, S>(props: ListItemProps<T, S>) {
   const [state, setState] = useState<ListItemState<T>>({
     currentValue: props.item,
     didChange: false,
@@ -156,12 +181,70 @@ function ListItem<T>(props: ListItemProps<T>) {
     }
   };
 
+  const sublist = props.renderSublist
+    ? props.renderSublist(state, setStateTrackChanges)
+    : null;
+
   return (
     <div className="NetworkListItem" role="listitem">
       <p>{props.getLabel(state)}</p>
       <form onSubmit={onSubmit}>
         {props.renderCommands(state, setStateTrackChanges)}
       </form>
+      {sublist ? (
+        <div className="sublist" role="list">
+          {/* Just verified that */}
+          {/* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */}
+          {sublist!.map((sublistItem, index) => (
+            <SublistItem key={index} item={sublistItem} />
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+interface SublistItemProps<T> {
+  item: SublistItem<T>;
+}
+
+export function SublistItem<T>(props: SublistItemProps<T>) {
+  const [networkState, setNetworkState] = useState<NetworkListItemState>({
+    status: "ready",
+  });
+
+  const onSubmit: FormEventHandler<HTMLFormElement> = async (event) => {
+    event.preventDefault();
+    setNetworkState({ status: "loading" });
+
+    try {
+      const data = await props.item.sendUpdateItemRequest(props.item.subject);
+      props.item.onSuccessfulUpdate(data);
+      setNetworkState({ status: "ready" });
+    } catch (e) {
+      if (e instanceof ServerError) {
+        setNetworkState({ status: "failure", code: e.code });
+      } else {
+        setNetworkState({ status: "failure", code: 500 });
+      }
+    }
+  };
+
+  const label = (() => {
+    switch (networkState.status) {
+      case "loading":
+        return "Loading…";
+      case "failure":
+        return `Error (code ${networkState.code})`;
+      case "ready":
+        return props.item.getLabel(props.item.subject);
+    }
+  })();
+
+  return (
+    <div className="sublist-item">
+      <p>{label}</p>
+      <form onSubmit={onSubmit}>{props.item.renderCommands(networkState)}</form>
     </div>
   );
 }

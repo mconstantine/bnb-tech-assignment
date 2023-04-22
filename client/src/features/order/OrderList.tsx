@@ -5,10 +5,22 @@ import {
   selectOrderList,
   updateOrder,
 } from "./orderListSlice";
-import { ListItemState, NetworkList } from "../../components/NetworkList";
+import {
+  ListItemState,
+  NetworkList,
+  NetworkListItemState,
+  SublistItem,
+} from "../../components/NetworkList";
 import { sendNetworkRequest } from "../network";
 import { formatDate } from "../../formatUtils";
-import { ProductStatus } from "../product/productListSlice";
+import {
+  Product,
+  ProductStatus,
+  updateProduct,
+} from "../product/productListSlice";
+import { NumberInput } from "../../components/NumberInput";
+import { Dispatch, FormEventHandler, SetStateAction } from "react";
+import { UpdateProductInput } from "../product/api";
 
 export function OrderList() {
   const state = useAppSelector(selectOrderList);
@@ -18,7 +30,7 @@ export function OrderList() {
     dispatch(fetchOrderList());
   };
 
-  const sendUpdateOrderRequest = (order: Order) =>
+  const sendOrderUpdateOrderRequest = (order: Order) =>
     sendNetworkRequest<Order>({
       path: `/orders/${order.id}/done/`,
       method: "PATCH",
@@ -26,6 +38,20 @@ export function OrderList() {
 
   const onOrderUpdate = (order: Order) => {
     dispatch(updateOrder(order));
+  };
+
+  const sendProductUpdateRequest = (product: Product) =>
+    sendNetworkRequest<UpdateProductInput, Product>({
+      path: `/products/${product.id}/`,
+      method: "PATCH",
+      input: {
+        status: product.status,
+        quantity: product.quantity,
+      },
+    });
+
+  const onProductUpdate = (product: Product) => {
+    dispatch(updateProduct(product));
   };
 
   const getOrderLabel = (state: ListItemState<Order>) => {
@@ -56,15 +82,87 @@ export function OrderList() {
     );
   };
 
+  const renderSublist = (
+    state: ListItemState<Order>,
+    setState: Dispatch<SetStateAction<ListItemState<Order>>>
+  ): SublistItem<Product>[] =>
+    state.currentValue.Products.map((product) => {
+      const renderCommands = (networkState: NetworkListItemState) => {
+        const isUIDisabled = networkState.status === "loading";
+
+        const onQuantityChange = (quantity: number) => {
+          setState((state) => ({
+            ...state,
+            currentValue: {
+              ...state.currentValue,
+              Products: state.currentValue.Products.map((p) => {
+                if (p.id === product.id) {
+                  return { ...p, quantity };
+                } else {
+                  return p;
+                }
+              }),
+            },
+          }));
+        };
+
+        const onStatusChange: FormEventHandler<HTMLSelectElement> = (event) => {
+          const status = event.currentTarget.value as ProductStatus;
+
+          setState((state) => ({
+            ...state,
+            currentValue: {
+              ...state.currentValue,
+              Products: state.currentValue.Products.map((p) => {
+                if (p.id === product.id) {
+                  return { ...p, status };
+                } else {
+                  return p;
+                }
+              }),
+            },
+          }));
+        };
+
+        return (
+          <>
+            <select value={product.status} onChange={onStatusChange}>
+              {Object.entries(ProductStatus).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+            <NumberInput
+              count={product.quantity}
+              min={1}
+              onChange={onQuantityChange}
+              disabled={isUIDisabled}
+            />
+            <input type="submit" value="Save" disabled={isUIDisabled} />
+          </>
+        );
+      };
+
+      return {
+        subject: product,
+        getLabel: (product) => product.name,
+        sendUpdateItemRequest: sendProductUpdateRequest,
+        onSuccessfulUpdate: onProductUpdate,
+        renderCommands,
+      };
+    });
+
   return (
     <NetworkList
       title="Your Orders"
       state={state}
       getLabel={getOrderLabel}
       fetchItems={fetchOrders}
-      sendUpdateItemRequest={sendUpdateOrderRequest}
+      sendUpdateItemRequest={sendOrderUpdateOrderRequest}
       onSuccessfulUpdate={onOrderUpdate}
       renderCommands={renderCommands}
+      renderSublist={renderSublist}
     />
   );
 }
