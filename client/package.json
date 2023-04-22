@@ -8,7 +8,8 @@
     "build": "tsc && vite build",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "test": "yarn run cypress open"
+    "test": "yarn run cypress run",
+    "test-open": "yarn run cypress open"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^1.9.5",
