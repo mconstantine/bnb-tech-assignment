@@ -88,35 +88,41 @@ export function OrderList() {
   ): SublistItem<Product>[] =>
     state.currentValue.Products.map((product) => {
       const renderCommands = (networkState: NetworkListItemState) => {
-        const isUIDisabled = networkState.status === "loading";
+        switch (product.status) {
+          case ProductStatus.Processing: {
+            const isUIDisabled = networkState.status === "loading";
 
-        const onQuantityChange = (quantity: number) => {
-          setState((state) => ({
-            ...state,
-            currentValue: {
-              ...state.currentValue,
-              Products: state.currentValue.Products.map((p) => {
-                if (p.id === product.id) {
-                  return { ...p, quantity };
-                } else {
-                  return p;
-                }
-              }),
-            },
-          }));
-        };
+            const onQuantityChange = (quantity: number) => {
+              setState((state) => ({
+                ...state,
+                currentValue: {
+                  ...state.currentValue,
+                  Products: state.currentValue.Products.map((p) => {
+                    if (p.id === product.id) {
+                      return { ...p, quantity };
+                    } else {
+                      return p;
+                    }
+                  }),
+                },
+              }));
+            };
 
-        return (
-          <>
-            <NumberInput
-              count={product.quantity}
-              min={1}
-              onChange={onQuantityChange}
-              disabled={isUIDisabled}
-            />
-            <input type="submit" value="Save" disabled={isUIDisabled} />
-          </>
-        );
+            return (
+              <>
+                <NumberInput
+                  count={product.quantity}
+                  min={1}
+                  onChange={onQuantityChange}
+                  disabled={isUIDisabled}
+                />
+                <input type="submit" value="Save" disabled={isUIDisabled} />
+              </>
+            );
+          }
+          case ProductStatus.Done:
+            return <p>Done</p>;
+        }
       };
 
       return {
